@@ -42,7 +42,7 @@ void PuremdInterface::getReaxffPuremdForces(int num_qm_atoms,  const std::vector
   if (0 != retPuremd) throw OpenMMException("Error at PuReMD simulation.");
   retPuremd = get_atom_forces_qmmm(handlePuremd, qm_forces.data(), mm_forces.data());
   retPuremd = get_atom_charges_qmmm(handlePuremd, qm_q.data(), NULL);
-  retPuremd = get_system_info(handlePuremd, NULL, NULL, &totalEnergy, NULL, NULL, NULL);
+  retPuremd = get_system_info(handlePuremd, &totalEnergy, NULL, NULL, NULL, NULL, NULL);
   if(0!=retPuremd) throw OpenMMException("Error in parameter extraction.");
   //double be, vdwe, ele, pol;
   //retPuremd = get_energies_qmmm(handlePuremd, &be, &vdwe, &ele, &pol);

@@ -11,13 +11,14 @@
 #include <algorithm>
 #include <sstream>
 #include<iostream>
+#include<limits>
 
 using namespace OpenMM;
 using namespace std;
 
 constexpr double conversionFactor = 1.66053906892 * 6.02214076/100;
 
-inline void transformPosQM(const std::vector<Vec3>& positions, const std::vector<int> indices, std::vector<double> out){
+inline void transformPosQM(const std::vector<Vec3>& positions, const std::vector<int> indices, std::vector<double>& out){
   std::for_each(indices.begin(), indices.end(), [&](int Index){
     out.emplace_back(positions[Index][0]*AngstromsPerNm);
     out.emplace_back(positions[Index][1]*AngstromsPerNm);
@@ -25,7 +26,7 @@ inline void transformPosQM(const std::vector<Vec3>& positions, const std::vector
   });
 }
 
-inline void transformPosqMM(const std::vector<Vec3>& positions, const std::vector<double> charges, const std::vector<int> indices, std::vector<double> out){
+inline void transformPosqMM(const std::vector<Vec3>& positions, const std::vector<double> charges, const std::vector<int> indices, std::vector<double>& out){
   std::for_each(indices.begin(), indices.end(), [&](int Index){
     out.emplace_back(positions[Index][0]*AngstromsPerNm);
     out.emplace_back(positions[Index][1]*AngstromsPerNm);
@@ -60,24 +61,22 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
     }
 }
 
-/**
-This calculates the box size and angles. For now it is not needed because we assume that there are 90 degree angles.
-*/
-void ExternalPuremdForceImpl::getBoxInfo(ContextImpl& context, std::vector<double>& simBoxInfo)
+inline void getBoxInfo(const std::vector<Vec3>& positions, std::vector<double>& simBoxInfo)
 {
-  std::vector<Vec3> PeriodicBoxVectors(3);
-  context.getPeriodicBoxVectors(PeriodicBoxVectors[0], PeriodicBoxVectors[1], PeriodicBoxVectors[2]);
 
-  for (int i=0; i<3; i++)
-  {
-    //AA
-    simBoxInfo[i] = std::sqrt(PeriodicBoxVectors[i].dot(PeriodicBoxVectors[i]))*AngstromsPerNm*10;
-  }
-  simBoxInfo[3] = std::acos(PeriodicBoxVectors[1].dot(PeriodicBoxVectors[2])/(simBoxInfo[1]*simBoxInfo[2])) * 180.0 / M_PI;
-  simBoxInfo[4] =  std::acos(PeriodicBoxVectors[0].dot(PeriodicBoxVectors[2])/(simBoxInfo[0]*simBoxInfo[2])) * 180.0 / M_PI;
-  simBoxInfo[5] =  std::acos(PeriodicBoxVectors[0].dot(PeriodicBoxVectors[1])/(simBoxInfo[0]*simBoxInfo[1])) * 180.0 / M_PI;
+    double min = std::numeric_limits<double>::infinity();
+    double max = -std::numeric_limits<double>::infinity();
+    for (int i=0; i<3; i++)
+    {
+        for (const auto& pos:positions)
+        {
+            max = std::max(max, pos[i]);
+            min = std::min(min, pos[i]);
+        }
+        simBoxInfo[i] = max*AngstromsPerNm - min*AngstromsPerNm + 20.0;
+    }
+    simBoxInfo[3] =simBoxInfo[4] = simBoxInfo[5] = 90.0;
 }
-
 double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::vector<Vec3> &positions, std::vector<Vec3>& forces)
 {
   // need to seperate positions
@@ -88,7 +87,7 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   //get the box size. move this into a function
   
   std::vector<double> simBoxInfo(6);
-  getBoxInfo(context, simBoxInfo);
+  getBoxInfo(positions, simBoxInfo);
 
   qmPos.reserve(numQm*3);
   mmPos_q.reserve(numMm*3);
@@ -104,7 +103,7 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   transformPosqMM(positions, charges, mmParticles, mmPos_q);
 
   // OUTPUT VARIABLES
-  std::vector<double> qmForces(numQm*3), mmForces(numMm*3);
+  std::vector<double> qmForces(numQm*3, 0), mmForces(numMm*3,0);
   std::vector<double> qmQ(numQm, 0);
   double energy;
 
@@ -122,7 +121,7 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
       transformedForces[qmParticles[i]][0] = qmForces.at(3*i);
       transformedForces[qmParticles[i]][1] = qmForces.at(3*i + 1);
       transformedForces[qmParticles[i]][2] = qmForces.at(3*i + 2);
-      charges[qmParticles[i]] = qmQ[i];
+      //charges[qmParticles[i]] = qmQ[i];
   }
 
   for (size_t i=0; i<mmParticles.size(); ++i)
@@ -133,11 +132,11 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   }
 
   //update charges
-  context.setCharges(charges);
+  //context.setCharges(charges);
   //copy forces and transform from Angstroms * Daltons / ps^2 to kJ/mol/nm
 
   for(size_t i =0;i<forces.size();++i) {
-      forces[i] = -transformedForces[i] * conversionFactor;
+      forces[i] = -transformedForces[i]/conversionFactor;
   }
 
   //done

@@ -49,4 +49,11 @@ ForceImpl*ExternalPuremdForce::createImpl() const {
     return new ExternalPuremdForceImpl(*this);
 }
 
+void ExternalPuremdForce::setUsesPeriodicBoundaryConditions(bool periodic) {
+    usePeriodic = periodic;
+}
+
+bool ExternalPuremdForce::usesPeriodicBoundaryConditions() const {
+    return usePeriodic;
+}
 

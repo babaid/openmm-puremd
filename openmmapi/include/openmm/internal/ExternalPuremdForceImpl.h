@@ -31,12 +31,6 @@ namespace OpenMM {
       std::vector<char> mmSymbols;
       std::vector<int> qmParticles;
       std::vector<int> mmParticles;
-      /**@private
-       *
-       * @param context
-       * @param simBoxInfo
-       */
-      static void getBoxInfo(ContextImpl& context, std::vector<double>& simBoxInfo);
       const ExternalPuremdForce & owner;
       PuremdInterface Interface;
     };

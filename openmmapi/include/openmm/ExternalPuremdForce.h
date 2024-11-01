@@ -67,7 +67,18 @@ namespace OpenMM {
      * @param isQM is it reactive
      */
     void getParticleParameters(int index, int& particle, char* symbol, int& isQM) const;
-
+    /**
+     * Set whether this force should apply periodic boundary conditions when calculating displacements.
+     * Usually this is not appropriate for bonded forces, but there are situations when it can be useful.
+     */
+    void setUsesPeriodicBoundaryConditions(bool periodic);
+    /**
+     * Returns whether or not this force makes use of periodic boundary
+     * conditions.
+     *
+     * @returns true if force uses PBC and false otherwise
+     */
+    bool usesPeriodicBoundaryConditions() const;
     protected:
     ForceImpl* createImpl() const;
     private:
@@ -77,7 +88,6 @@ namespace OpenMM {
 
       std::string ffield_file;
       std::string control_file;
-    //unused
     bool usePeriodic;
     mutable int numContexts, firstChangedBond, lastChangedBond;
 };
