@@ -1199,7 +1199,6 @@ int set_custom_charge_constraints( const void * const handle,
     return ret;
 }
 
-
 #if defined(QMMM)
 /* Allocate top-level data structures and parse input files
  * for the first simulation
@@ -1257,7 +1256,6 @@ void * setup_qmmm( int qm_num_atoms, const char * const qm_symbols,
         x[2] = qm_pos[3 * i + 2];
 
         Fit_to_Periodic_Box( &spmd_handle->system->box, x );
-
         spmd_handle->workspace->orig_id[i] = i + 1;
         element[0] = toupper( qm_symbols[2 * i] );
         element[1] = toupper( qm_symbols[2 * i + 1] );
@@ -1666,6 +1664,36 @@ int get_atom_charges_qmmm( const void * const handle, double * const qm_q,
         ret = SPUREMD_SUCCESS;
     }
 
+    return ret;
+}
+
+// This function allows get the dissipation energy of two atoms during a simulation.
+int get_dissipation_energy(const void* const handle, int i, int j, double * const  value)
+{
+    int ret;
+    spuremd_handle* spmd_handle;
+    ret = SPUREMD_FAILURE;
+    if (handle != NULL)
+    {
+        *value = spmd_handle->system->reax_param.tbp[i][j].De_s;
+        ret = SPUREMD_SUCCESS;
+    }
+    return ret;
+}
+
+// This function allows to change the dissipation energy of two atoms during a simulation.
+// It needs to be called before every force query
+int set_dissipation_energy(const void* const handle, int i, int j, const double * const value)
+{
+    int ret;
+    spuremd_handle* spmd_handle;
+    ret = SPUREMD_FAILURE;
+    if (handle != NULL)
+    {
+        spmd_handle->system->reax_param.tbp[i][j].De_s = *value;
+        spmd_handle->system->reax_param.tbp[j][i].De_s = *value;
+        ret = SPUREMD_SUCCESS;
+    }
     return ret;
 }
 #endif
