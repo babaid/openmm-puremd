@@ -1674,24 +1674,30 @@ int get_dissipation_energy(const void* const handle, int i, int j, double * cons
     spuremd_handle* spmd_handle;
     ret = SPUREMD_FAILURE;
     if (handle != NULL)
-    {
+    
         *value = spmd_handle->system->reax_param.tbp[i][j].De_s;
         ret = SPUREMD_SUCCESS;
     }
     return ret;
 }
 
-// This function allows to change the dissipation energy of two atoms during a simulation.
-// It needs to be called before every force query
-int set_dissipation_energy(const void* const handle, int i, int j, const double * const value)
+// This function changes the dissipation energy of  every two body parameter in the system. 
+// The formula is based on the boltzmann factors: \frac{E_{dis}^{0}}{T_{eff}} = \frac{E_{dis}^{1}}{T_{0}}.
+int set_dissipation_energies_to_temperature(const void* const handle, double t_init_per_teff)
 {
     int ret;
     spuremd_handle* spmd_handle;
     ret = SPUREMD_FAILURE;
     if (handle != NULL)
     {
-        spmd_handle->system->reax_param.tbp[i][j].De_s = *value;
-        spmd_handle->system->reax_param.tbp[j][i].De_s = *value;
+        int N = spmd_handle->system->reax_param.num_atom_types;
+        for (int i=0; i<N; i++)
+        {
+            for(int j =0; j<N; j++)
+            {
+                spmd_handle->system->reax_param.tbp[i][j].De_s *= t_init_per_teff; 
+            }
+        }
         ret = SPUREMD_SUCCESS;
     }
     return ret;

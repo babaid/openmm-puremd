@@ -194,8 +194,14 @@ void Context::setPositions(const vector<Vec3>& positions) {
 
 void Context::setCharges(const vector<double>& charges) {
     if ((int) charges.size() != impl->getSystem().getNumParticles())
-        throw OpenMMException("Called setPositions() on a Context with the wrong number of positions");
+        throw OpenMMException("Called setCharges() on a Context with the wrong number of charges");
     impl->setCharges(charges);
+}
+
+void Context::setReaxffTemperatureRatio(const double ratio) {
+    if (ratio < 0.0 )
+        throw OpenMMException("Called setReaxffTemperatureRatio on a negative number.");
+    impl->setReaxffTemperatureRatio(ratio);
 }
 
 void Context::setVelocities(const vector<Vec3>& velocities) {

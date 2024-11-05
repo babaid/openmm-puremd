@@ -77,6 +77,7 @@ inline void getBoxInfo(const std::vector<Vec3>& positions, std::vector<double>& 
     }
     simBoxInfo[3] =simBoxInfo[4] = simBoxInfo[5] = 90.0;
 }
+
 double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::vector<Vec3> &positions, std::vector<Vec3>& forces)
 {
   // need to seperate positions
@@ -99,15 +100,16 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   std::vector<double> charges;
   charges.reserve(N);
   context.getCharges(charges);
-
+  
   transformPosqMM(positions, charges, mmParticles, mmPos_q);
-
+  // "simulated annealing"
+  double temperature_ratio = context.getReaxffTemperatureRatio();
   // OUTPUT VARIABLES
   std::vector<double> qmForces(numQm*3, 0), mmForces(numMm*3,0);
   std::vector<double> qmQ(numQm, 0);
   double energy;
-
-  Interface.getReaxffPuremdForces(numQm, qmSymbols, qmPos,
+  
+  Interface.getReaxffPuremdForces(temperature_ratio, numQm, qmSymbols, qmPos,
                                   numMm, mmSymbols, mmPos_q,
                                   simBoxInfo, qmForces, mmForces, qmQ,
                                   energy);

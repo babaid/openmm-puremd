@@ -103,7 +103,7 @@ int get_atom_charges_qmmm( const void * const, double * const, double * const );
 
 int get_dissipation_energy(const void* const, int, int, double * const);
 
-int set_dissipation_energy(const void* const, int, int, const double * const);
+int set_dissipation_energies_to_temperature(const void* const, double);
 
 #endif
 
