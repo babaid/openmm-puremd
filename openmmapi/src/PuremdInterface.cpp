@@ -56,9 +56,5 @@ void PuremdInterface::getReaxffPuremdForces(double temperature, int num_qm_atoms
 
 //std::cout << "Bonding energy: " << be << " vdW energy: " << vdwe << std::endl << " ele energy: " << ele << " pol en: "<< pol<< std::endl;
 
-}
 
- void PuremdInterface::setEDS(const std::vector<EDInfo> edinfo)
- {
-   eds = edinfo;
- }
+}

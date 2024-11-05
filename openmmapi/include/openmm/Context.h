@@ -171,7 +171,7 @@ public:
      * Set the reaxff temperature ratio for the dissipation energies.
      * @param ratio
      */
-    void setReaxffTemperatureRatio(const double ratio);
+    void setReaxffTemperatureRatio(double ratio);
     /**
      * Set the velocities of all particles in the System (measured in nm/picosecond).
      * 

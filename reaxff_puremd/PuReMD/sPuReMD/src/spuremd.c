@@ -1667,19 +1667,6 @@ int get_atom_charges_qmmm( const void * const handle, double * const qm_q,
     return ret;
 }
 
-// This function allows get the dissipation energy of two atoms during a simulation.
-int get_dissipation_energy(const void* const handle, int i, int j, double * const  value)
-{
-    int ret;
-    spuremd_handle* spmd_handle;
-    ret = SPUREMD_FAILURE;
-    if (handle != NULL)
-    
-        *value = spmd_handle->system->reax_param.tbp[i][j].De_s;
-        ret = SPUREMD_SUCCESS;
-    }
-    return ret;
-}
 
 // This function changes the dissipation energy of  every two body parameter in the system. 
 // The formula is based on the boltzmann factors: \frac{E_{dis}^{0}}{T_{eff}} = \frac{E_{dis}^{1}}{T_{0}}.

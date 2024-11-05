@@ -198,7 +198,7 @@ void Context::setCharges(const vector<double>& charges) {
     impl->setCharges(charges);
 }
 
-void Context::setReaxffTemperatureRatio(const double ratio) {
+void Context::setReaxffTemperatureRatio(double ratio) {
     if (ratio < 0.0 )
         throw OpenMMException("Called setReaxffTemperatureRatio on a negative number.");
     impl->setReaxffTemperatureRatio(ratio);
