@@ -78,7 +78,7 @@ int set_contiguous_charge_constraints( const void * const, int,
 int set_custom_charge_constraints( const void * const,
         int, const int * const, const int * const,
         const double * const, const double * const );
-#define QMMM
+
 #if defined(QMMM)
 void * setup_qmmm( int, const char * const,
         const double * const, int, const char * const,
