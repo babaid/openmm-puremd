@@ -102,14 +102,13 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   context.getCharges(charges);
   
   transformPosqMM(positions, charges, mmParticles, mmPos_q);
-  // "simulated annealing"
-  double temperature_ratio = context.getReaxffTemperatureRatio();
+ 
   // OUTPUT VARIABLES
   std::vector<double> qmForces(numQm*3, 0), mmForces(numMm*3,0);
   std::vector<double> qmQ(numQm, 0);
   double energy;
   
-  Interface.getReaxffPuremdForces(temperature_ratio, numQm, qmSymbols, qmPos,
+  Interface.getReaxffPuremdForces(numQm, qmSymbols, qmPos,
                                   numMm, mmSymbols, mmPos_q,
                                   simBoxInfo, qmForces, mmForces, qmQ,
                                   energy);

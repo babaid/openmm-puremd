@@ -253,14 +253,6 @@ void ContextImpl::setCharges(const std::vector<double>& charges) {
     integrator.stateChanged(State::Positions);
 }
 
-void ContextImpl::setReaxffTemperatureRatio(const double ratio){
-    reaxff_t_ratio = ratio;
-}
-
-double ContextImpl::getReaxffTemperatureRatio(){
-    return reaxff_t_ratio;
-}
-
 void ContextImpl::getForces(std::vector<Vec3>& forces) {
     updateStateDataKernel.getAs<UpdateStateDataKernel>().getForces(*this, forces);
 }
