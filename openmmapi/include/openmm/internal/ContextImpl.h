@@ -134,6 +134,16 @@ public:
      * @param charges
      */
     void setCharges(const std::vector<double>& charges);
+    /** 
+    * Set the ReaxFF temperature ratio for each two body parameter
+    * @param ratio
+    */
+    void setReaxffTemperatureRatio(const double ratio);
+     /** 
+    * Get the ReaxFF temperature ratio for each two body parameter
+    * @param ratio
+    */
+    double getReaxffTemperatureRatio();
     /**
      * Get the current forces on all particles.
      *
@@ -319,6 +329,7 @@ private:
     Platform* platform;
     Kernel initializeForcesKernel, updateStateDataKernel, applyConstraintsKernel, virtualSitesKernel;
     void* platformData;
+    double reaxff_t_ratio=1.0;
 };
 
 } // namespace OpenMM

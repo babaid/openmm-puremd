@@ -42,7 +42,9 @@ void * setup2( int, const int * const,
 
 int setup_callback( const void * const, const callback_function );
 
-int simulate( const void * const );
+int set_edt_qmmm(const void * const, const double * const );
+
+int simulate( const void * const);
 
 int cleanup( const void * const );
 
@@ -80,6 +82,7 @@ int set_custom_charge_constraints( const void * const,
         const double * const, const double * const );
 
 #if defined(QMMM)
+
 void * setup_qmmm( int, const char * const,
         const double * const, int, const char * const,
         const double * const, const double * const,
@@ -100,8 +103,6 @@ int get_atom_forces_qmmm( const void * const, double * const,
         double * const );
 
 int get_atom_charges_qmmm( const void * const, double * const, double * const );
-
-int set_dissipation_energies_to_temperature(const void* const, double);
 
 #endif
 

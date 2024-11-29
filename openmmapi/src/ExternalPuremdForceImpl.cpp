@@ -16,7 +16,7 @@
 using namespace OpenMM;
 using namespace std;
 
-constexpr double conversionFactor = 1.66053906892 * 6.02214076/100;
+constexpr double conversionFactor = 2*1.66053906892 * 6.02214076;
 
 inline void transformPosQM(const std::vector<Vec3>& positions, const std::vector<int> indices, std::vector<double>& out){
   std::for_each(indices.begin(), indices.end(), [&](int Index){
@@ -34,6 +34,24 @@ inline void transformPosqMM(const std::vector<Vec3>& positions, const std::vecto
     out.emplace_back(charges[Index]);
   });
 }
+
+inline void getBoxInfo(const std::vector<Vec3>& positions, std::vector<double>& simBoxInfo)
+{
+
+    double min = std::numeric_limits<double>::infinity();
+    double max = -std::numeric_limits<double>::infinity();
+    for (int i=0; i<3; i++)
+    {
+        for (const auto& pos:positions)
+        {
+            max = std::max(max, pos[i]);
+            min = std::min(min, pos[i]);
+        }
+        simBoxInfo[i] = max*AngstromsPerNm - min*AngstromsPerNm + 20.0;
+    }
+    simBoxInfo[3] =simBoxInfo[4] = simBoxInfo[5] = 90.0;
+}
+
 
 ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owner): CustomCPPForceImpl(owner), owner(owner)
 {
@@ -61,25 +79,10 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
     }
 }
 
-inline void getBoxInfo(const std::vector<Vec3>& positions, std::vector<double>& simBoxInfo)
-{
-
-    double min = std::numeric_limits<double>::infinity();
-    double max = -std::numeric_limits<double>::infinity();
-    for (int i=0; i<3; i++)
-    {
-        for (const auto& pos:positions)
-        {
-            max = std::max(max, pos[i]);
-            min = std::min(min, pos[i]);
-        }
-        simBoxInfo[i] = max*AngstromsPerNm - min*AngstromsPerNm + 20.0;
-    }
-    simBoxInfo[3] =simBoxInfo[4] = simBoxInfo[5] = 90.0;
-}
-
 double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::vector<Vec3> &positions, std::vector<Vec3>& forces)
 {
+  //double factor = context.getReaxffTemperatureRatio();
+
   // need to seperate positions
   //next we need to seperate and flatten the QM/MM positions and convert to AA#
   int N = owner.getNumAtoms();
@@ -106,8 +109,9 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   // OUTPUT VARIABLES
   std::vector<double> qmForces(numQm*3, 0), mmForces(numMm*3,0);
   std::vector<double> qmQ(numQm, 0);
+
+
   double energy;
-  
   Interface.getReaxffPuremdForces(numQm, qmSymbols, qmPos,
                                   numMm, mmSymbols, mmPos_q,
                                   simBoxInfo, qmForces, mmForces, qmQ,
@@ -116,7 +120,7 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   // merge the qm and mm forces, additionally transform the scale
   std::vector<Vec3> transformedForces(owner.getNumAtoms());
 
-
+  
   for (size_t i=0; i<qmParticles.size(); ++i)
   {
       transformedForces[qmParticles[i]][0] = qmForces.at(3*i);
@@ -137,10 +141,10 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl& context, const std::ve
   //copy forces and transform from Angstroms * Daltons / ps^2 to kJ/mol/nm
 
   for(size_t i =0;i<forces.size();++i) {
-      forces[i] = -transformedForces[i]/conversionFactor;
+      forces[i] = -transformedForces[i]*conversionFactor;
   }
-
+  
   //done
-  //kCal -> kJ
+  //kCal -> kJ and factor...
   return energy*KJPerKcal;
 }

@@ -85,7 +85,6 @@ namespace OpenMM {
       std::vector<int> allAtoms;
       std::vector<char> allSymbols;
       std::vector<bool> allIsQM;
-
       std::string ffield_file;
       std::string control_file;
     bool usePeriodic;
