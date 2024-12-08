@@ -28,7 +28,7 @@ namespace OpenMM {
       }
     private:
       std::vector<char> qmSymbols;
-      std::vector<char> mmSymbols;
+      std::vector<char> AtomSymbols;
       std::vector<int> qmParticles;
       std::vector<int> mmParticles;
       const ExternalPuremdForce & owner;
