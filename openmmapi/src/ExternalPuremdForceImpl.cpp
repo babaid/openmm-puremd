@@ -15,6 +15,7 @@
 #include <mutex>
 #include <sstream>
 #include <thread>
+#include<cctype>
 
 using namespace OpenMM;
 using namespace std;
@@ -198,7 +199,7 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
         {
             qmParticles.emplace_back(particle);
             qmSymbols.emplace_back(symbol[0]);
-            qmSymbols.emplace_back(symbol[1]);
+            qmSymbols.emplace_back(std::tolower(symbol[1]));
         }
         else
         {
@@ -206,7 +207,7 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
         }
         // instead of MM symbols, because we have to filter this regularly
         AtomSymbols.emplace_back(symbol[0]);
-        AtomSymbols.emplace_back(symbol[1]);
+        AtomSymbols.emplace_back(std::tolower(symbol[1]));
     }
 }
 
