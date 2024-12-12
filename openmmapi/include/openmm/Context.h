@@ -163,16 +163,6 @@ public:
      */
     void setPositions(const std::vector<Vec3>& positions);
     /**
-     * Set charges in the context for all particles.
-     * @param charges
-     */
-    void setCharges(const std::vector<double>& charges);
-    /**
-     * Set the reaxff temperature ratio for the dissipation energies.
-     * @param ratio
-     */
-    void setReaxffTemperatureRatio(double ratio);
-    /**
      * Set the velocities of all particles in the System (measured in nm/picosecond).
      * 
      * @param velocities  a vector whose length equals the number of particles in the System.  The i'th element

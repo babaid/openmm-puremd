@@ -54,19 +54,21 @@ namespace OpenMM {
      *
      * @param particle the index of the particle
      * @param symbol symbol of the particle
+     * @param charge charge of the atom
      * @param isQM is it reactive
      * @return the index of the bond that was added
      */
-    int addAtom(int particle, char* symbol, bool isQM);
+    int addAtom(int particle, char* symbol, double charge, bool isQM);
     /**
      * Get the bonding atom
      *
      * @param index the index of the atoms
      * @param particle the particle index is going to be saved here
      * @param symbol symbol of the atom
+     * @param charge charge of the atom
      * @param isQM is it reactive
      */
-    void getParticleParameters(int index, int& particle, char* symbol, int& isQM) const;
+    void getParticleParameters(int index, int& particle, char* symbol, double& charge, int& isQM) const;
     /**
      * Set whether this force should apply periodic boundary conditions when calculating displacements.
      * Usually this is not appropriate for bonded forces, but there are situations when it can be useful.
@@ -84,6 +86,7 @@ namespace OpenMM {
     private:
       std::vector<int> allAtoms;
       std::vector<char> allSymbols;
+      std::vector<double> allCharges;
       std::vector<bool> allIsQM;
       std::string ffield_file;
       std::string control_file;

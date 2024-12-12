@@ -28,7 +28,6 @@ constexpr size_t parallel_threshold = 100;
 // charges  in the context to 0
 inline void transformPosQM(const std::vector<Vec3> &positions,
                            const std::vector<int> indices,
-                           std::vector<double> &charges,
                            std::vector<double> &out)
 {
     out.resize(indices.size() * 3);
@@ -41,10 +40,6 @@ inline void transformPosQM(const std::vector<Vec3> &positions,
         out[i * 3]     = positions[indices[i]][0] * AngstromsPerNm;
         out[i * 3 + 1] = positions[indices[i]][1] * AngstromsPerNm;
         out[i * 3 + 2] = positions[indices[i]][2] * AngstromsPerNm;
-        // This is very important, because otherwise we need to create exceptions
-        // for all the QM atoms. For small systems this imposes no problem, but this
-        // means N_qm*N_mm exceptions, for large systems CUDA will crash.
-        charges[Index] = 0;
     }
 }
 
@@ -189,7 +184,8 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
         int particle;
         char symbol[2];
         int isqm;
-        owner.getParticleParameters(i, particle, symbol, isqm);
+        double charge;
+        owner.getParticleParameters(i, particle, symbol, charge, isqm);
         if (isqm)
         {
             qmParticles.emplace_back(particle);
@@ -203,6 +199,7 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
         // instead of MM symbols, because we have to filter this regularly
         AtomSymbols.emplace_back(symbol[0]);
         AtomSymbols.emplace_back(symbol[1]);
+        charges.emplace_back(charge);
     }
 }
 
@@ -224,13 +221,10 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl &context,
     // retrieve charges from the context. Had to introduce some changes to classes
     // Context, ContextImpl,
     //  UpdateStateDataKernel, CommonUpdateStateDataKernel
-    std::vector<double> charges;
-    charges.reserve(N);
-    context.getCharges(charges);
-
+    
     // flatten relevant qm positions and set charges to 0. The last step is
     // important so no exclusions have to be set manually.
-    transformPosQM(positions, qmParticles, charges, qmPos);
+    transformPosQM(positions, qmParticles, qmPos);
 
     // get relevant MM indices from a bounding box sorrounding the ReaxFF atoms
     //  ~1nm makes total sense as it is the upper taper radius, so interactions
@@ -247,8 +241,6 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl &context,
 
     getSymbolsByIndex(AtomSymbols, relevantMMIndices, mmRS);
     transformPosqMM(positions, charges, relevantMMIndices, mmPos_q);
-
-    context.setCharges(charges);
 
     // OUTPUT VARIABLES
     std::vector<double> qmForces(numQm * 3, 0), mmForces(numMm * 3, 0);

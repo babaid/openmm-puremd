@@ -17,11 +17,12 @@ ExternalPuremdForce::ExternalPuremdForce() {}
 ExternalPuremdForce::ExternalPuremdForce(const std::string& ffieldFile, const std::string& controlFile) :usePeriodic(false), numContexts(0), ffield_file(ffieldFile), control_file(controlFile) {
 }
 
-int ExternalPuremdForce::addAtom(int particle, char* symbol, bool isQM) {
+int ExternalPuremdForce::addAtom(int particle, char* symbol, double charge, bool isQM) {
     bool hasLen = std::strlen(symbol) > 1;
     allAtoms.push_back(particle);
     allIsQM.push_back(isQM);
     allSymbols.push_back(symbol[0]);
+    allCharges.push_back(charge);
     if (hasLen){
       allSymbols.push_back(symbol[1]);
     }
@@ -32,10 +33,11 @@ int ExternalPuremdForce::addAtom(int particle, char* symbol, bool isQM) {
     return allAtoms.size();
 }
 
-void ExternalPuremdForce::getParticleParameters(int index, int &particle, char* symbol, int &isQM)  const {
+void ExternalPuremdForce::getParticleParameters(int index, int &particle, char* symbol, double& charge, int &isQM)  const {
     particle = allAtoms[index];
     symbol[0] = allSymbols[index*2];
     symbol[1] = allSymbols[index*2 + 1];
+    charge = allCharges[index];
     isQM = allIsQM[index];
 }
 

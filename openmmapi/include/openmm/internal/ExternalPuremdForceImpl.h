@@ -31,6 +31,7 @@ namespace OpenMM {
       std::vector<char> AtomSymbols;
       std::vector<int> qmParticles;
       std::vector<int> mmParticles;
+      std::vector<double> charges;
       const ExternalPuremdForce & owner;
       PuremdInterface Interface;
     };
