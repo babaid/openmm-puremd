@@ -15,12 +15,11 @@
 #include <mutex>
 #include <sstream>
 #include <thread>
-#include<cctype>
 
 using namespace OpenMM;
 using namespace std;
 
-constexpr double HartreePerBohrToKcalPerMolPerNm = 51.422; 
+constexpr double EvPerNmToKcalPerNm = 32.2063782682;
 constexpr double ProtonToCoulomb  = 1.602E-19;
 
 constexpr size_t parallel_threshold = 100;
@@ -151,13 +150,14 @@ inline void filterMMAtomsOMP(const std::vector<Vec3> &positions,
     const int numThreads = omp_get_num_threads();
     std::vector<std::vector<int>> localIndices(numThreads);
 
-    #pragma omp parallel
+    // Parallel section to filter indices
+#pragma omp parallel num_threads(numThreads)
     {
-        int threadId               = omp_get_thread_num();
+        int threadId = omp_get_thread_num();
         std::vector<int> &localVec = localIndices[threadId];
-        localVec.reserve(mmIndices.size() / numThreads);
 
-        #pragma omp for
+        // Process each index in mmIndices
+#pragma omp for
         for (size_t i = 0; i < mmIndices.size(); i++)
         {
             const Vec3 &point = positions[mmIndices[i]];
@@ -165,22 +165,17 @@ inline void filterMMAtomsOMP(const std::vector<Vec3> &positions,
             {
                 localVec.push_back(mmIndices[i]);
             }
-        }        
-    }
-    #pragma omp barrier
-    size_t totalSize = 0;
-    for (const auto &localVec : localIndices)
-    {
-        totalSize += localVec.size();
+        }
     }
 
-    relevantIndices.reserve(totalSize);
-
+    // Merge the results from all threads into relevantIndices
     for (const auto &localVec : localIndices)
     {
+        // Add each local vector's elements to relevantIndices
         relevantIndices.insert(relevantIndices.end(), localVec.begin(), localVec.end());
     }
 }
+
 
 ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owner)
     : CustomCPPForceImpl(owner), owner(owner)
@@ -199,7 +194,7 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
         {
             qmParticles.emplace_back(particle);
             qmSymbols.emplace_back(symbol[0]);
-            qmSymbols.emplace_back(std::tolower(symbol[1]));
+            qmSymbols.emplace_back(symbol[1]);
         }
         else
         {
@@ -207,7 +202,7 @@ ExternalPuremdForceImpl::ExternalPuremdForceImpl(const ExternalPuremdForce &owne
         }
         // instead of MM symbols, because we have to filter this regularly
         AtomSymbols.emplace_back(symbol[0]);
-        AtomSymbols.emplace_back(std::tolower(symbol[1]));
+        AtomSymbols.emplace_back(symbol[1]);
     }
 }
 
@@ -244,8 +239,6 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl &context,
     std::vector<int> relevantMMIndices;
 
     std::pair<Vec3, Vec3> bbCog = calculateBoundingBox(positions, qmParticles, bbCutoff);
-    //std::cout << "Minbound: " << bbCog.first[0] << ", " << bbCog.first[1] << ", " << bbCog.first[2] << std::endl;
-    //std::cout << "Maxbound: " << bbCog.second[0] << ", " << bbCog.second[1] << ", " << bbCog.second[2] << std::endl;
     // 3nm should be good enough
     filterMMAtomsOMP(positions, mmParticles, bbCog, relevantMMIndices);
     
@@ -293,7 +286,7 @@ double ExternalPuremdForceImpl::computeForce(ContextImpl &context,
     #pragma omp parallel for
     for (size_t i = 0; i < forces.size(); ++i)
     {
-        forces[i] = -transformedForces[i] * HartreePerBohrToKcalPerMolPerNm;
+        forces[i] = -transformedForces[i] * EvPerNmToKcalPerNm ;
     }
 
     // done
