@@ -2,6 +2,18 @@
 [![Conda](https://img.shields.io/conda/v/conda-forge/openmm.svg)](https://anaconda.org/conda-forge/openmm)
 [![Anaconda Cloud Badge](https://anaconda.org/conda-forge/openmm/badges/downloads.svg)](https://anaconda.org/conda-forge/openmm)
 
+## About this modification of OpeMM
+
+This prototype plugin, allows to perform hybrid ReaxFF/MM simulations within OpenMM. In the background it uses the PuReMD implementation of ReaxFF just like AMBER. 
+
+Setting up a simulation is just as simple as usually with OpenMM. Additionally to a normal system setup, one has to seperate each ReaxFF atom index from the MM atom indices, and set the charge in the nonbonded forces to 0 (electrostatic interactions are calculated by ReaxFF), and call the addAtom method of the ExternalPuremdForce class. Finally, remove the unnecessary forces from the ReaxFF domain (bond, torsion, angle) and of course keep those in the MM domain and do the same with constraints. 
+
+
+Later on I will provide some examples and detailed descriptions of some simulation protocols.
+
+
+
+
 ## OpenMM: A High Performance Molecular Dynamics Library
 
 Introduction
